@@ -252,3 +252,115 @@ class TestDeleteItemUseCase:
         # Assert
         assert result is False
         mock_repo.delete.assert_called_once_with(999)
+
+
+class TestCreateItemWithDueDate:
+    """Test CreateItemUseCase with due_date"""
+
+    @pytest.mark.asyncio
+    async def test_execute_creates_item_with_due_date(self):
+        """Test creating an item with a due date"""
+        # Arrange
+        from datetime import datetime
+
+        mock_repo = AsyncMock()
+        due_date = datetime(2024, 12, 31, 23, 59, 59)
+        dto = create_item_create_dto(
+            name="Task with due date", description="Important task", due_date=due_date
+        )
+        created_entity = create_item_entity(
+            id=1, name="Task with due date", description="Important task", due_date=due_date
+        )
+        mock_repo.create.return_value = created_entity
+        use_case = CreateItemUseCase(mock_repo)
+
+        # Act
+        result = await use_case.execute(dto)
+
+        # Assert
+        assert result is not None
+        assert result.name == "Task with due date"
+        assert result.due_date == due_date
+        mock_repo.create.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_execute_creates_item_without_due_date(self):
+        """Test creating an item without a due date"""
+        # Arrange
+        mock_repo = AsyncMock()
+        dto = create_item_create_dto(name="Task without due date", description="Regular task")
+        created_entity = create_item_entity(
+            id=1, name="Task without due date", description="Regular task"
+        )
+        mock_repo.create.return_value = created_entity
+        use_case = CreateItemUseCase(mock_repo)
+
+        # Act
+        result = await use_case.execute(dto)
+
+        # Assert
+        assert result is not None
+        assert result.name == "Task without due date"
+        assert result.due_date is None
+        mock_repo.create.assert_called_once()
+
+
+class TestUpdateItemWithDueDate:
+    """Test UpdateItemUseCase with due_date"""
+
+    @pytest.mark.asyncio
+    async def test_execute_updates_item_with_due_date(self):
+        """Test updating an item to add/change due date"""
+        # Arrange
+        from datetime import datetime
+
+        mock_repo = AsyncMock()
+        existing_item = create_item_entity(id=1, name="Existing Item", description="Old desc")
+        new_due_date = datetime(2024, 12, 31, 23, 59, 59)
+        dto = create_item_update_dto(
+            name="Updated Item", description="New desc", due_date=new_due_date
+        )
+        updated_entity = create_item_entity(
+            id=1, name="Updated Item", description="New desc", due_date=new_due_date
+        )
+
+        mock_repo.get_by_id.return_value = existing_item
+        mock_repo.update.return_value = updated_entity
+        use_case = UpdateItemUseCase(mock_repo)
+
+        # Act
+        result = await use_case.execute(item_id=1, dto=dto)
+
+        # Assert
+        assert result is not None
+        assert result.name == "Updated Item"
+        assert result.due_date == new_due_date
+        mock_repo.update.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_execute_removes_due_date_from_item(self):
+        """Test updating an item to remove due date"""
+        # Arrange
+        from datetime import datetime
+
+        mock_repo = AsyncMock()
+        existing_item = create_item_entity(
+            id=1,
+            name="Item with due date",
+            description="Has due date",
+            due_date=datetime(2024, 12, 31, 23, 59, 59),
+        )
+        dto = create_item_update_dto(name="Item without due date", due_date=None)
+        updated_entity = create_item_entity(id=1, name="Item without due date", due_date=None)
+
+        mock_repo.get_by_id.return_value = existing_item
+        mock_repo.update.return_value = updated_entity
+        use_case = UpdateItemUseCase(mock_repo)
+
+        # Act
+        result = await use_case.execute(item_id=1, dto=dto)
+
+        # Assert
+        assert result is not None
+        assert result.due_date is None
+        mock_repo.update.assert_called_once()
