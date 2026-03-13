@@ -12,6 +12,7 @@ export interface Item {
   id: number;
   name: string;
   description: string;
+  due_date?: string;  // ISO date string
   tags: Tag[];
 }
 
