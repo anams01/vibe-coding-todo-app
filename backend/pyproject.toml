@@ -40,7 +40,7 @@ build-backend = "poetry.core.masonry.api"
 [tool.ruff]
 # Ruff configuration for the project
 line-length = 100
-target-version = "py313"
+target-version = "py312"
 
 [tool.ruff.lint]
 # Enable specific rules
