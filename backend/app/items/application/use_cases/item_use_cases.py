@@ -60,8 +60,8 @@ class UpdateItemUseCase:
             current_item.name = dto.name
         if dto.description is not None:
             current_item.description = dto.description
-        if dto.due_date is not None:
-            current_item.due_date = dto.due_date
+        # Always update due_date to allow clearing it by setting to None
+        current_item.due_date = dto.due_date
 
         updated_item = await self.repository.update(item_id, current_item, tag_ids=dto.tag_ids)
         return ItemDTO.model_validate(updated_item)

@@ -40,6 +40,8 @@ build-backend = "poetry.core.masonry.api"
 [tool.ruff]
 # Ruff configuration for the project
 line-length = 100
+# Note: Using py312 instead of py313 because ruff doesn't support py313 yet
+# Project uses Python 3.12.3 in the current environment
 target-version = "py312"
 
 [tool.ruff.lint]
