@@ -122,4 +122,72 @@ describe("TaskCard", () => {
     expect(taskCard).toHaveClass("rounded-lg");
     expect(taskCard).toHaveClass("cursor-grab");
   });
+
+  describe("Due Date Display", () => {
+    it("displays due date when set", () => {
+      const itemWithDueDate = {
+        ...mockItems.simple,
+        due_date: "2026-03-20",
+      };
+      render(<TaskCard {...defaultProps} item={itemWithDueDate} />);
+
+      const dueDateElement = screen.getByTestId(
+        `task-due-date-${itemWithDueDate.id}`,
+      );
+      expect(dueDateElement).toBeInTheDocument();
+    });
+
+    it("does not display due date when not set", () => {
+      const itemWithoutDueDate = { ...mockItems.simple, due_date: undefined };
+      render(<TaskCard {...defaultProps} item={itemWithoutDueDate} />);
+
+      const dueDateElement = screen.queryByTestId(
+        `task-due-date-${itemWithoutDueDate.id}`,
+      );
+      expect(dueDateElement).not.toBeInTheDocument();
+    });
+
+    it("shows green color for due date more than 7 days away", () => {
+      // Calculate a date 10 days in the future
+      const futureDate = new Date();
+      futureDate.setDate(futureDate.getDate() + 10);
+      const dateString = futureDate.toISOString().split("T")[0];
+
+      const item = { ...mockItems.simple, due_date: dateString };
+      render(<TaskCard {...defaultProps} item={item} />);
+
+      const dueDateElement = screen.getByTestId(`task-due-date-${item.id}`);
+      expect(dueDateElement).toHaveClass("text-green-600");
+      expect(dueDateElement).toHaveClass("bg-green-50");
+    });
+
+    it("shows orange color for due date within 1-7 days", () => {
+      // Calculate a date 3 days in the future
+      const futureDate = new Date();
+      futureDate.setDate(futureDate.getDate() + 3);
+      const dateString = futureDate.toISOString().split("T")[0];
+
+      const item = { ...mockItems.simple, due_date: dateString };
+      render(<TaskCard {...defaultProps} item={item} />);
+
+      const dueDateElement = screen.getByTestId(`task-due-date-${item.id}`);
+      expect(dueDateElement).toHaveClass("text-orange-600");
+      expect(dueDateElement).toHaveClass("bg-orange-50");
+    });
+
+    it("shows red color for overdue tasks", () => {
+      // Calculate a date 2 days in the past
+      const pastDate = new Date();
+      pastDate.setDate(pastDate.getDate() - 2);
+      const dateString = pastDate.toISOString().split("T")[0];
+
+      const item = { ...mockItems.simple, due_date: dateString };
+      render(<TaskCard {...defaultProps} item={item} />);
+
+      const dueDateElement = screen.getByTestId(`task-due-date-${item.id}`);
+      expect(dueDateElement).toHaveClass("text-red-600");
+      expect(dueDateElement).toHaveClass("bg-red-50");
+      expect(dueDateElement).toHaveTextContent("Overdue");
+    });
+  });
 });

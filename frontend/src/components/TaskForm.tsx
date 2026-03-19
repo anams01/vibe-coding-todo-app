@@ -7,6 +7,7 @@ interface TaskFormProps {
   onSubmit: (data: {
     name: string;
     description: string;
+    due_date?: string;
     tag_ids: number[];
   }) => Promise<void>;
   onCancel: () => void;
@@ -29,6 +30,11 @@ export default function TaskForm({
   const [description, setDescription] = useState(
     mode === "edit" && initialData ? initialData.description || "" : "",
   );
+  const [dueDate, setDueDate] = useState(
+    mode === "edit" && initialData && initialData.due_date
+      ? initialData.due_date.split("T")[0]
+      : "",
+  );
   const [selectedTagIds, setSelectedTagIds] = useState<number[]>(
     mode === "edit" && initialData
       ? initialData.tags?.map((tag) => tag.id) || []
@@ -39,17 +45,24 @@ export default function TaskForm({
     e.preventDefault();
     if (!name.trim()) return;
 
-    await onSubmit({ name, description, tag_ids: selectedTagIds });
+    await onSubmit({
+      name,
+      description,
+      due_date: dueDate || undefined,
+      tag_ids: selectedTagIds,
+    });
 
     // Reset form
     setName("");
     setDescription("");
+    setDueDate("");
     setSelectedTagIds([]);
   };
 
   const handleCancel = () => {
     setName("");
     setDescription("");
+    setDueDate("");
     setSelectedTagIds([]);
     onCancel();
   };
@@ -88,6 +101,22 @@ export default function TaskForm({
           onChange={(e) => setDescription(e.target.value)}
           placeholder="Enter description"
           rows={3}
+          className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm shadow-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+        />
+      </div>
+      <div>
+        <label
+          htmlFor="task-due-date"
+          className="block text-sm font-medium text-slate-700 mb-1"
+        >
+          Due date (optional)
+        </label>
+        <input
+          id="task-due-date"
+          data-testid="task-due-date-input"
+          type="date"
+          value={dueDate}
+          onChange={(e) => setDueDate(e.target.value)}
           className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm shadow-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-400"
         />
       </div>
